@@ -1,0 +1,23 @@
+groups:
+  - name: demo_alerts
+    interval: 30s
+    rules:
+      - alert: HighCPUUsage
+        expr: rate(container_cpu_usage_seconds_total{name="demo-app"}[1m]) > 0.8
+        for: 2m
+        labels:
+          severity: critical
+          service: demo-app
+        annotations:
+          summary: "CPU usage tinggi pada {{ $labels.container }}"
+          description: "CPU usage {{ $value | humanize }}% selama lebih dari 2 menit"
+          runbook: "Cek apakah ada infinite loop atau memory leak"
+      
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[2m]) / rate(http_requests_total[2m]) > 0.05
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Error rate tinggi: {{ $value | humanizePercentage }}"
+          description: "Error rate melebihi 5% dalam 1 menit"
